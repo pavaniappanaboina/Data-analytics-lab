@@ -1,0 +1,73 @@
+#IMPUTATION
+import numpy as np
+import pandas as pd
+
+# Create a sample dataset
+data = {
+    'Age': [25, 27, 29, np.nan, 32, 35, np.nan, 40, 42, 45],
+    'Salary': [50000, 54000, 58000, 60000, np.nan, 65000, 70000, 72000, 75000, np.nan],
+    'Experience': [1, 2, 3, 4, 5, np.nan, 7, 8, 9, 10]
+}
+
+df = pd.DataFrame(data)
+print("Original DataFrame with Missing Values:")
+print(df)
+#SIMPLE IMPUTATION
+from sklearn.impute import SimpleImputer
+
+# Create a copy of the dataframe to keep the original safe
+df_simple = df.copy()
+
+# Initialize the imputer (strategy can be 'mean', 'median', 'most_frequent', 'constant')
+imputer = SimpleImputer(strategy='mean')
+
+# Fit and transform the data
+# Note: output is a numpy array, so we convert it back to DataFrame
+df_simple_imputed = pd.DataFrame(imputer.fit_transform(df_simple), columns=df_simple.columns)
+
+print("\n--- Simple Imputation (Mean) ---")
+print(df_simple_imputed)
+#K-NEAREST NEIGHBOR
+from sklearn.impute import KNNImputer
+
+df_knn = df.copy()
+
+# Initialize KNN Imputer
+# n_neighbors=3 means it looks at the 3 most similar rows
+knn_imputer = KNNImputer(n_neighbors=3)
+
+df_knn_imputed = pd.DataFrame(knn_imputer.fit_transform(df_knn), columns=df_knn.columns)
+
+print("\n--- KNN Imputation ---")
+print(df_knn_imputed)
+
+#3.Multivariate Imputation by Chained Equations (MICE)
+from sklearn.experimental import enable_iterative_imputer  # Explicitly enable
+from sklearn.impute import IterativeImputer
+
+df_mice = df.copy()
+
+# Initialize MICE Imputer
+# random_state ensures reproducibility
+mice_imputer = IterativeImputer(max_iter=10, random_state=0)
+
+df_mice_imputed = pd.DataFrame(mice_imputer.fit_transform(df_mice), columns=df_mice.columns)
+
+print("\n--- MICE (Iterative) Imputation ---")
+print(df_mice_imputed)
+#4. Time-Series Imputation (Forward/Backward Fill)
+     df_time = df.copy()
+
+# Forward Fill
+df_ffill = df_time.ffill()
+
+# Backward Fill
+df_bfill = df_time.bfill()
+
+# Linear Interpolation (Connecting the dots)
+# This assumes a linear relationship between time steps
+df_interp = df_time.interpolate(method='linear')
+
+print("\n--- Time Series: Linear Interpolation ---")
+print(df_interp)
+     
