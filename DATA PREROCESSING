@@ -1,0 +1,66 @@
+#create  a dataset
+data = {
+    'Name': ['Alice', 'Bob', 'Alice', 'David', 'Eve', 'Frank', 'Grace', 'Heidi'],
+    'Age': [25, np.nan, 25, 45, 120, 30, np.nan, 35],  # 120 is likely noise/outlier
+    'Salary': [50000, 60000, 50000, 80000, 55000, 58000, 62000, 2000000], # 2M is noise
+    'City': ['NY', 'LA', 'NY', 'Chicago', 'Houston', 'Phoenix', 'NY', 'Seattle']
+}
+
+df = pd.DataFrame(data)
+
+print("--- ORIGINAL DATAFRAME ---")
+print(df)
+print("\n")
+
+
+# Check for missing values
+print(f"Missing values per column:\n{df.isnull().sum()}\n")
+
+# Method 1: Drop rows with missing values (Destructive)
+df_dropped = df.dropna()
+print("1. Shape after dropping rows with NaNs:", df_dropped.shape)
+
+print(df_dropped)
+
+# Method 2: Imputation (Filling with Mean/Median/Mode)
+# We will use Median for Age to fill NaNs (robust to outliers)
+df_imputed = df.copy()
+median_age = df_imputed['Age'].median()
+df_imputed['Age'] = df_imputed['Age'].fillna(median_age)
+
+print(f"2. Filled missing Age with median ({median_age}):")
+print(df_imputed)
+print("\n")
+
+# We will use the IQR (Interquartile Range) method to remove Age outliers (e.g., 120).
+
+Q1 = df_imputed['Age'].quantile(0.25)
+Q3 = df_imputed['Age'].quantile(0.75)
+IQR = Q3 - Q1
+
+lower_bound = Q1 - 1.5 * IQR
+upper_bound = Q3 + 1.5 * IQR
+
+print(f"Age Bounds: {lower_bound} to {upper_bound}")
+
+# Filter the data
+df_clean_noise = df_imputed[
+    (df_imputed['Age'] >= lower_bound) &
+    (df_imputed['Age'] <= upper_bound)
+]
+
+print("Rows removed (Noise):")
+print(df_imputed[~df_imputed.index.isin(df_clean_noise.index)])
+print("\n")
+print("Dataset after noise removal")
+print(df_clean_noise
+#IDENTIFYING AND ELEMINATING DATA REDUNDENCY
+duplicates = df_clean_noise[df_clean_noise.duplicated(keep=False)]
+print("Duplicate Rows found:")
+print(duplicates)
+
+# Remove duplicates (keep the first occurrence)
+df_final = df_clean_noise.drop_duplicates(keep='first')
+
+print("\n--- FINAL CLEANED DATAFRAME ---")
+print(df_final)
